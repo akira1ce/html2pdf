@@ -1,5 +1,5 @@
-import jsPDF from "jspdf";
-import domtoimage from "dom-to-image";
+import jsPDF from 'jspdf';
+import domtoimage from 'dom-to-image';
 
 const A4 = {
   width: 595,
@@ -48,7 +48,7 @@ const runTask = async (taskQueue: (() => void)[]): Promise<void> => {
 };
 
 const createBlank = (height: number): HTMLDivElement => {
-  const blank = document.createElement("div");
+  const blank = document.createElement('div');
   blank.style.height = `${height}px`;
   return blank;
 };
@@ -59,8 +59,13 @@ const createBlank = (height: number): HTMLDivElement => {
  * @param className page wrapper class name
  * @returns page wrapper
  */
-const createWrapper = (padding: number, className: string = "page_wrapper"): HTMLDivElement => {
-  const wrapper = document.createElement("div");
+const createWrapper = (
+  height: number,
+  padding: number,
+  className: string = 'page_wrapper'
+): HTMLDivElement => {
+  const wrapper = document.createElement('div');
+  wrapper.style.height = `${height}px`;
   wrapper.appendChild(createBlank(padding));
   wrapper.classList.add(className);
   return wrapper;
@@ -78,16 +83,16 @@ const createWrapper = (padding: number, className: string = "page_wrapper"): HTM
 const _adjustLayout = async (
   ele: HTMLElement | string,
   unitSelector: string,
-  pageWrapperClass: string = "page_wrapper",
+  pageWrapperClass: string = 'page_wrapper',
   py: number = 20
 ): Promise<void> => {
   /* get all units */
   const units = document.querySelectorAll<HTMLElement>(unitSelector);
-  if (!units.length) throw new Error("No units found");
+  if (!units.length) throw new Error('No units found');
 
   /* get container */
-  const container = typeof ele === "string" ? document.querySelector<HTMLElement>(ele) : ele;
-  if (!container) throw new Error("No container found");
+  const container = typeof ele === 'string' ? document.querySelector<HTMLElement>(ele) : ele;
+  if (!container) throw new Error('No container found');
 
   /* container w/h -> a4 w/h */
   const a4Width = container.clientWidth;
@@ -96,7 +101,7 @@ const _adjustLayout = async (
   /* current pointer position */
   let cur = 0;
   /* create first page wrapper */
-  let wrapper = createWrapper(py, pageWrapperClass);
+  let wrapper = createWrapper(a4Height, py, pageWrapperClass);
   /* page wrappers */
   const wrappers: HTMLDivElement[] = [];
   cur += py;
@@ -116,7 +121,7 @@ const _adjustLayout = async (
       wrappers.push(wrapper.cloneNode(true) as HTMLDivElement);
 
       /* gen new page & fill padding & unit to next page */
-      wrapper = createWrapper(py);
+      wrapper = createWrapper(a4Height, py, pageWrapperClass);
       cur += py;
       wrapper.appendChild(unit.cloneNode(true));
       cur += boxHeight;
@@ -132,7 +137,7 @@ const _adjustLayout = async (
   }
 
   /* clear container */
-  container.innerHTML = "";
+  container.innerHTML = '';
 
   const taskQueue = wrappers.map((wrapper) => () => container.appendChild(wrapper)).reverse();
   await runTask(taskQueue);
@@ -150,7 +155,7 @@ const _adjustLayout = async (
 export const transfer2Pdf = async (
   ele: HTMLElement | string,
   unitSelector: string,
-  pageWrapperClass: string = "page_wrapper",
+  pageWrapperClass: string = 'page_wrapper',
   py: number = 20
 ): Promise<void> => {
   try {
@@ -158,10 +163,10 @@ export const transfer2Pdf = async (
     await _adjustLayout(ele, unitSelector, pageWrapperClass, py);
 
     const pages = document.querySelectorAll<HTMLElement>(`.${pageWrapperClass}`);
-    if (!pages.length) throw new Error("No pages found");
+    if (!pages.length) throw new Error('No pages found');
 
     /* create pdf instance */
-    const pdf = new jsPDF("p", "pt", "a4");
+    const pdf = new jsPDF('p', 'pt', 'a4');
 
     /* convert each page to image and add to pdf */
     for (let i = 0; i < pages.length; i++) {
@@ -171,13 +176,13 @@ export const transfer2Pdf = async (
       const imgData = await domtoimage.toPng(pages[i]);
 
       /* add image to pdf */
-      pdf.addImage(imgData, "PNG", 0, 0, A4.width, A4.height);
+      pdf.addImage(imgData, 'PNG', 0, 0, A4.width, A4.height);
     }
 
     /* save pdf */
-    pdf.save("document.pdf");
+    pdf.save('document.pdf');
   } catch (error) {
-    console.error("pdf generation failed:", error);
+    console.error('pdf generation failed:', error);
     throw error;
   }
 };
