@@ -1,5 +1,5 @@
 {
-  "name": "html2pdf",
+  "name": "@akira1ce/html2pdf",
   "version": "1.0.0",
   "type": "module",
   "main": "dist/index.js",
@@ -14,6 +14,19 @@
   "files": [
     "dist"
   ],
+  "keywords": [
+    "pdf",
+    "html"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/akira1ce/html2pdf"
+  },
+  "author": {
+    "name": "akiraice",
+    "email": "akiraice@163.com"
+  },
+  "description": "html2pdf",
   "dependencies": {
     "@types/dom-to-image": "^2.6.7",
     "dom-to-image": "^2.6.0",
@@ -25,8 +38,8 @@
     "@rollup/plugin-typescript": "^11.1.6",
     "rimraf": "^5.0.5",
     "rollup": "^4.12.0",
-    "typescript": "^5.3.3",
-    "tslib": "^2.6.2"
+    "tslib": "^2.6.2",
+    "typescript": "^5.3.3"
   },
   "peerDependencies": {
     "dom-to-image": "^2.6.0",
