@@ -72,6 +72,45 @@ const createWrapper = (
 };
 
 /**
+ * deep clone node.
+ * some node can not be cloned by cloneNode like canvas.
+ * @param node
+ * @param deep
+ * @returns
+ */
+const deepCloneNode = (node: any, deep = true) => {
+  const clonedNode = node.cloneNode(false);
+
+  /* canvas node */
+  if (node instanceof HTMLCanvasElement && deep) {
+    /* create new canvas */
+    const canvas = document.createElement('canvas');
+    canvas.width = node.width;
+    canvas.height = node.height;
+
+    /* getContext */
+    const context = canvas.getContext('2d');
+    context?.drawImage(node, 0, 0);
+
+    /* replace origin canvas */
+    clonedNode.replaceWith(canvas);
+    return canvas;
+  }
+
+  if (!deep) {
+    return clonedNode;
+  }
+
+  /* clone child */
+  for (const child of node.childNodes) {
+    const clonedChild = deepCloneNode(child, deep);
+    clonedNode.appendChild(clonedChild);
+  }
+
+  return clonedNode;
+};
+
+/**
  * adjust layout
  * collection all units -> determine whether it can be placed on one page「a4」 -> wrappers.
  * top-down streaming.
@@ -118,21 +157,21 @@ const _adjustLayout = async (
       cur += restHeight;
 
       /* push current page */
-      wrappers.push(wrapper.cloneNode(true) as HTMLDivElement);
+      wrappers.push(wrapper);
 
       /* gen new page & fill padding & unit to next page */
       wrapper = createWrapper(a4Height, py, pageWrapperClass);
       cur += py;
-      wrapper.appendChild(unit.cloneNode(true));
+      wrapper.appendChild(deepCloneNode(unit, true));
       cur += boxHeight;
     } else {
-      wrapper.appendChild(unit.cloneNode(true));
+      wrapper.appendChild(deepCloneNode(unit, true));
       cur += boxHeight;
     }
 
     /* last page */
     if (i === units.length - 1) {
-      wrappers.push(wrapper.cloneNode(true) as HTMLDivElement);
+      wrappers.push(wrapper);
     }
   }
 
@@ -172,8 +211,20 @@ export const transfer2Pdf = async (
     for (let i = 0; i < pages.length; i++) {
       if (i > 0) pdf.addPage();
 
+      /* zoom in to prevent blurry images  */
+      const width = pages[i].offsetWidth * 2;
+      const height = pages[i].offsetHeight * 2;
+
       /* dom to image */
-      const imgData = await domtoimage.toPng(pages[i]);
+      const imgData = await domtoimage.toPng(pages[i], {
+        quality: 1,
+        width,
+        height,
+        style: {
+          transform: 'scale(2)',
+          transformOrigin: 'top left',
+        },
+      });
 
       /* add image to pdf */
       pdf.addImage(imgData, 'PNG', 0, 0, A4.width, A4.height);
