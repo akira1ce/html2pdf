@@ -36,7 +36,7 @@ export default function App() {
   return <>
     <button onClick={() => transfer2Pdf('.container', '.min_unit')}> transfer2Pdf </button>
     {/* 容器 */}
-    <div class="container" style={{width: 794}}>
+    <div className="container" style={{width: 794}}>
       {/* 单元节点 */}
       <div className="min_unit"> Hello, world! </div>
       <div className="min_unit">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</div>
